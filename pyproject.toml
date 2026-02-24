@@ -1,0 +1,23 @@
+[project]
+name = "emoai"
+version = "0.1.0"
+description = "GAN-based multimodal emotion recognition framework."
+authors = ["tuan8600 <>"]
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.dependencies]
+numpy = "*"
+scipy = "*"
+pandas = "*"
+matplotlib = "*"
+seaborn = "*"
+scikit-learn = "*"
+torch = "*"
+torchaudio = "*"
+mne = "*"
+h5py = "*"
+tqdm = "*"
+
+[project.optional-dependencies]
+dev = ["pytest", "black", "flake8", "jupyter"]

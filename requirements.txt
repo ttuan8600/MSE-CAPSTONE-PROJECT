@@ -1,0 +1,21 @@
+# Core dependencies
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+scikit-learn
+torch
+torchaudio
+mne
+# Optional for data handling
+h5py
+# For progress bars
+tqdm
+# GPU support will be handled by user-specific torch installation
+
+# Development dependencies
+pytest
+black
+flake8
+jupyter
