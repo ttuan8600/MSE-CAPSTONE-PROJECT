@@ -1,5 +1,7 @@
 # EmoAI Training Guide: Pre-train on FACED, Fine-tune on EAV
 
+_Includes multimodal EEG+audio fusion support (use `--use-audio` flag)_
+
 ## Overview
 
 This guide walks you through the two-stage training pipeline for emotion recognition using synchronized multimodal data:
@@ -67,6 +69,10 @@ python scripts/train.py --mode pretrain \
 
 ### 2. Fine-tuning on EAV (30 epochs recommended)
 
+The fine-tuning script now supports optional audio modality fusion. By default
+only EEG features are used; add `--use-audio` to include MFCC-based audio
+features in the training pipeline.
+
 Once pre-training completes, run:
 
 ```bash
@@ -74,7 +80,8 @@ python scripts/train.py --mode finetune \
     --num-epochs 30 \
     --batch-size 16 \
     --finetune-lr 1e-4 \
-    --pretrained-path outputs/pretraining_YYYYMMDD_HHMMSS/best_model.pt
+    --pretrained-path outputs/pretraining_YYYYMMDD_HHMMSS/best_model.pt \
+    [--use-audio]           # include audio modality (MFCC features)
 ```
 
 **Expected output:**
@@ -196,6 +203,14 @@ After encoder pre-training/fine-tuning, integrate:
 6. 🔄 End-to-end training on all modalities
 
 ## Data Loading Implementation
+
+### Multi-modal Training
+
+The training pipeline can now exploit both EEG and audio modalities. When
+`--use-audio` is specified, the loader returns MFCC features for each
+sample and the model uses an `AudioEncoder` to convert them into a 128‑D
+latent representation. A `MultimodalFusion` module concatenates EEG and
+audio latents before classification. Video is still a placeholder.
 
 ### EAV Dataset Loader
 

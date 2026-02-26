@@ -194,22 +194,70 @@ class EEGEncoderLSTM(nn.Module):
         return x
 
 
+class AudioEncoder(nn.Module):
+    """Simple convolutional audio encoder for MFCC features.
+    
+    Converts MFCC spectrograms (n_mfcc x time) into a fixed-size latent vector
+    that can be fused with EEG features.
+    """
+    
+    def __init__(self, n_mfcc=13, latent_dim=128):
+        super().__init__()
+        self.conv1 = nn.Conv1d(n_mfcc, 64, kernel_size=5, stride=2, padding=2)
+        self.bn1 = nn.BatchNorm1d(64)
+        self.conv2 = nn.Conv1d(64, 128, kernel_size=5, stride=2, padding=2)
+        self.bn2 = nn.BatchNorm1d(128)
+        self.adaptive_pool = nn.AdaptiveAvgPool1d(1)
+        self.fc = nn.Linear(128, latent_dim)
+    
+    def forward(self, x):
+        """Forward pass.
+        x shape: (batch_size, n_mfcc, time_steps)
+        returns: (batch_size, latent_dim)
+        """
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = F.relu(x)
+        x = self.adaptive_pool(x).squeeze(-1)
+        x = self.fc(x)
+        return x
+
+
+class MultimodalFusion(nn.Module):
+    """Fusion module for EEG and audio latent representations.
+    
+    By default, concatenates EEG and audio features and projects back to latent_dim.
+    """
+    
+    def __init__(self, latent_dim=128, fusion_dim=None):
+        super().__init__()
+        self.latent_dim = latent_dim
+        self.fusion_dim = fusion_dim or latent_dim * 2
+        self.fc = nn.Sequential(
+            nn.Linear(self.fusion_dim, latent_dim),
+            nn.ReLU(),
+            nn.Dropout(0.3)
+        )
+    
+    def forward(self, eeg_latent, audio_latent=None):
+        if audio_latent is not None:
+            fused = torch.cat([eeg_latent, audio_latent], dim=1)
+        else:
+            fused = eeg_latent
+        return self.fc(fused)
+
+
 class EmotionClassifier(nn.Module):
     """Emotion classifier head for pre-training and fine-tuning.
     
-    Takes EEG encoder output and classifies emotion.
-    Used for supervised pre-training on FACED dataset.
+    Takes encoder (possibly fused) output and classifies emotion.
     """
     
     def __init__(self, latent_dim=128, num_emotions=5):
         """Initialize emotion classifier.
-        
-        Parameters
-        ----------
-        latent_dim : int, default=128
-            Dimension of input features from encoder.
-        num_emotions : int, default=5
-            Number of emotion classes.
         """
         super().__init__()
         self.fc = nn.Sequential(
@@ -223,16 +271,4 @@ class EmotionClassifier(nn.Module):
         )
     
     def forward(self, x):
-        """Forward pass.
-        
-        Parameters
-        ----------
-        x : torch.Tensor
-            Latent features from encoder of shape (batch_size, latent_dim).
-            
-        Returns
-        -------
-        torch.Tensor
-            Logits of shape (batch_size, num_emotions).
-        """
         return self.fc(x)

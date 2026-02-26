@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+# add project root so imports of `src` work
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import pytest
 import numpy as np
 
