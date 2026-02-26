@@ -17,7 +17,13 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 
-from src.models.eeg_encoder import EEGEncoder, EEGEncoderLSTM, EmotionClassifier
+from src.models.eeg_encoder import (
+    EEGEncoder,
+    EEGEncoderLSTM,
+    EmotionClassifier,
+    AudioEncoder,
+    MultimodalFusion,
+)
 from src.preprocessing.data_loader import (
     create_faced_dataloader,
     create_eav_dataloader,
@@ -150,7 +156,7 @@ class PretrainingTrainer:
 
 
 class FineTuningTrainer:
-    """Trainer for fine-tuning on EAV multimodal data."""
+    """Trainer for fine-tuning on EAV data, optionally multimodal (EEG + audio)."""
     
     def __init__(
         self,
@@ -159,9 +165,11 @@ class FineTuningTrainer:
         device: torch.device,
         learning_rate: float = 1e-4,
         output_dir: str = "outputs/finetuning",
+        use_audio: bool = False,
     ):
         self.encoder = encoder.to(device)
         self.device = device
+        self.use_audio = use_audio
         
         # Load pre-trained weights
         if os.path.exists(pretrained_path):
@@ -169,11 +177,23 @@ class FineTuningTrainer:
             self.encoder.load_state_dict(ckpt['encoder'])
             print(f"Loaded pre-trained encoder from {pretrained_path}")
         
-        # Emotion classifier for fine-tuning
+        # build audio encoder and fusion if needed
+        if self.use_audio:
+            self.audio_encoder = AudioEncoder(n_mfcc=13, latent_dim=128).to(device)
+            self.fusion = MultimodalFusion(latent_dim=128).to(device)
+        else:
+            self.audio_encoder = None
+            self.fusion = None
+        
+        # Emotion classifier for fine-tuning (takes fused features)
         self.classifier = EmotionClassifier(latent_dim=128, num_emotions=5).to(device)
         
+        params = list(self.encoder.parameters()) + list(self.classifier.parameters())
+        if self.use_audio:
+            params += list(self.audio_encoder.parameters()) + list(self.fusion.parameters())
+        
         self.optimizer = optim.Adam(
-            list(self.encoder.parameters()) + list(self.classifier.parameters()),
+            params,
             lr=learning_rate
         )
         self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, step_size=5, gamma=0.5)
@@ -200,8 +220,14 @@ class FineTuningTrainer:
             labels = torch.randint(0, 5, (eeg.size(0),)).to(self.device)
             
             # Forward pass
-            latent = self.encoder(eeg)
-            logits = self.classifier(latent)
+            eeg_latent = self.encoder(eeg)
+            if self.use_audio and batch.get('audio') is not None:
+                audio = batch['audio'].to(self.device)
+                audio_latent = self.audio_encoder(audio)
+                fused = self.fusion(eeg_latent, audio_latent)
+            else:
+                fused = eeg_latent
+            logits = self.classifier(fused)
             loss = self.criterion(logits, labels)
             
             # Backward pass
@@ -290,6 +316,8 @@ def finetune(args):
     dataloader, dataset = create_eav_dataloader(
         eav_data_dir=args.eav_dir,
         batch_size=args.batch_size,
+        load_audio=args.use_audio,
+        load_video=False,
     )
     print(f"Loaded {len(dataset)} samples from EAV")
     
@@ -303,6 +331,7 @@ def finetune(args):
         device=device,
         learning_rate=args.finetune_lr,
         output_dir=args.output_dir,
+        use_audio=args.use_audio,
     )
     
     # Training loop
@@ -345,7 +374,8 @@ def main():
                        help="Path to pre-trained encoder")
     parser.add_argument("--finetune-lr", type=float, default=1e-4,
                        help="Learning rate for fine-tuning")
-    
+    parser.add_argument("--use-audio", action="store_true",
+                       help="Enable audio modality during fine-tuning")    
     args = parser.parse_args()
     
     # Add timestamp to output dir
