@@ -1,0 +1,20 @@
+{
+  "eeg_only": {
+    "config": "EEG-only Baseline",
+    "use_audio": false,
+    "epochs": [],
+    "batch_losses": [],
+    "total_samples": 0,
+    "total_batches": 0,
+    "successful_batches": 0
+  },
+  "eeg_audio": {
+    "config": "EEG+Audio Fusion",
+    "use_audio": true,
+    "epochs": [],
+    "batch_losses": [],
+    "total_samples": 0,
+    "total_batches": 0,
+    "successful_batches": 0
+  }
+}

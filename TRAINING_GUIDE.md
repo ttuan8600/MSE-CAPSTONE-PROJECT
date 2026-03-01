@@ -159,8 +159,8 @@ After encoder pre-training/fine-tuning, integrate:
 
 - **Speech features**: MFCC spectrograms + GAN augmentation
 - **Video features**: Extracted landmarks/face embeddings
-- **Cross-Modal Attention**: Synchronize temporal alignment
-- **Fusion**: Concat or cross-attention pooling
+- **Cross-Modal Attention**: Synchronize temporal alignment (implemented)
+- **Fusion**: concat / cross_attention / gated pooling with learnable per-channel weights
 
 ## Hyperparameter Reference
 
@@ -209,8 +209,11 @@ After encoder pre-training/fine-tuning, integrate:
 The training pipeline can now exploit both EEG and audio modalities. When
 `--use-audio` is specified, the loader returns MFCC features for each
 sample and the model uses an `AudioEncoder` to convert them into a 128‑D
-latent representation. A `MultimodalFusion` module concatenates EEG and
-audio latents before classification. Video is still a placeholder.
+latent representation. A `MultimodalFusion` module fuses EEG and
+audio latents before classification; you can choose `concat`,
+`cross_attention` or `gated` modes via `--fusion-mode`. The fusion
+module also learns a per-channel weighting factor that scales each
+latent source. Video is still a placeholder.
 
 ### EAV Dataset Loader
 

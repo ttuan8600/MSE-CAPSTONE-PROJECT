@@ -278,7 +278,7 @@ scripts/run_pipeline.py
 ### Run pre-training
 
 ```bash
-cd c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT
+cd c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT
 python scripts/train.py --mode pretrain --num-epochs 50 --batch-size 32
 ```
 
