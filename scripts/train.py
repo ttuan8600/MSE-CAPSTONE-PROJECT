@@ -8,6 +8,7 @@ This script implements the two-stage training approach:
 import os
 import argparse
 import json
+import sys
 from pathlib import Path
 from datetime import datetime
 
@@ -15,7 +16,18 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.tensorboard import SummaryWriter
+
+# TensorBoard is optional
+try:
+    from torch.utils.tensorboard import SummaryWriter
+    HAS_TENSORBOARD = True
+except ImportError:
+    HAS_TENSORBOARD = False
+    SummaryWriter = None
+    print("Warning: TensorBoard not installed. Install with: pip install tensorboard")
+
+# Ensure project root is on path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.models.eeg_encoder import (
     EEGEncoder,
@@ -55,7 +67,7 @@ class PretrainingTrainer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        self.writer = SummaryWriter(self.output_dir)
+        self.writer = SummaryWriter(self.output_dir) if HAS_TENSORBOARD else None
         self.global_step = 0
     
     def train_epoch(self, dataloader, epoch):
@@ -96,15 +108,17 @@ class PretrainingTrainer:
                 print(f"Epoch {epoch} [{batch_idx}/{len(dataloader)}] "
                       f"Loss: {loss.item():.4f}")
             
-            self.writer.add_scalar("train/loss", loss.item(), self.global_step)
+            if self.writer:
+                self.writer.add_scalar("train/loss", loss.item(), self.global_step)
             self.global_step += 1
         
         avg_loss = total_loss / total_samples
         avg_acc = total_correct / total_samples
         
         print(f"Epoch {epoch} | Avg Loss: {avg_loss:.4f} | Avg Acc: {avg_acc:.4f}\n")
-        self.writer.add_scalar("train/epoch_loss", avg_loss, epoch)
-        self.writer.add_scalar("train/epoch_accuracy", avg_acc, epoch)
+        if self.writer:
+            self.writer.add_scalar("train/epoch_loss", avg_loss, epoch)
+            self.writer.add_scalar("train/epoch_accuracy", avg_acc, epoch)
         
         return avg_loss, avg_acc
     
@@ -135,8 +149,9 @@ class PretrainingTrainer:
         avg_acc = total_correct / total_samples
         
         print(f"Validation | Avg Loss: {avg_loss:.4f} | Avg Acc: {avg_acc:.4f}")
-        self.writer.add_scalar("val/epoch_loss", avg_loss, epoch)
-        self.writer.add_scalar("val/epoch_accuracy", avg_acc, epoch)
+        if self.writer:
+            self.writer.add_scalar("val/epoch_loss", avg_loss, epoch)
+            self.writer.add_scalar("val/epoch_accuracy", avg_acc, epoch)
         
         return avg_loss, avg_acc
     
@@ -166,10 +181,12 @@ class FineTuningTrainer:
         learning_rate: float = 1e-4,
         output_dir: str = "outputs/finetuning",
         use_audio: bool = False,
+        fusion_mode: str = "concat",
     ):
         self.encoder = encoder.to(device)
         self.device = device
         self.use_audio = use_audio
+        self.fusion_mode = fusion_mode
         
         # Load pre-trained weights
         if os.path.exists(pretrained_path):
@@ -180,7 +197,7 @@ class FineTuningTrainer:
         # build audio encoder and fusion if needed
         if self.use_audio:
             self.audio_encoder = AudioEncoder(n_mfcc=13, latent_dim=128).to(device)
-            self.fusion = MultimodalFusion(latent_dim=128).to(device)
+            self.fusion = MultimodalFusion(latent_dim=128, mode=self.fusion_mode).to(device)
         else:
             self.audio_encoder = None
             self.fusion = None
@@ -202,7 +219,7 @@ class FineTuningTrainer:
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         
-        self.writer = SummaryWriter(self.output_dir)
+        self.writer = SummaryWriter(self.output_dir) if HAS_TENSORBOARD else None
         self.global_step = 0
     
     def train_epoch(self, dataloader, epoch):
@@ -245,12 +262,14 @@ class FineTuningTrainer:
             if batch_idx % 5 == 0:
                 print(f"Epoch {epoch} [{batch_idx}/{len(dataloader)}] Loss: {loss.item():.4f}")
             
-            self.writer.add_scalar("finetune/loss", loss.item(), self.global_step)
+            if self.writer:
+                self.writer.add_scalar("finetune/loss", loss.item(), self.global_step)
             self.global_step += 1
         
         avg_loss = total_loss / total_samples
         print(f"Epoch {epoch} | Avg Loss: {avg_loss:.4f}\n")
-        self.writer.add_scalar("finetune/epoch_loss", avg_loss, epoch)
+        if self.writer:
+            self.writer.add_scalar("finetune/epoch_loss", avg_loss, epoch)
         
         return avg_loss
     
@@ -332,6 +351,7 @@ def finetune(args):
         learning_rate=args.finetune_lr,
         output_dir=args.output_dir,
         use_audio=args.use_audio,
+        fusion_mode=args.fusion_mode,
     )
     
     # Training loop
@@ -375,7 +395,10 @@ def main():
     parser.add_argument("--finetune-lr", type=float, default=1e-4,
                        help="Learning rate for fine-tuning")
     parser.add_argument("--use-audio", action="store_true",
-                       help="Enable audio modality during fine-tuning")    
+                       help="Enable audio modality during fine-tuning")
+    parser.add_argument("--fusion-mode", type=str, default="concat",
+                       choices=["concat", "cross_attention", "gated"],
+                       help="Fusion strategy to use when audio is enabled")    
     args = parser.parse_args()
     
     # Add timestamp to output dir

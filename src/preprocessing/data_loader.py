@@ -306,12 +306,20 @@ class EAVMultimodalDataset(Dataset):
                 except Exception as e:
                     pass  # Silently continue
             
+            # normalize to standard 28 channels
+            if eeg_data.shape[0] != 28:
+                if eeg_data.shape[0] > 28:
+                    eeg_data = eeg_data[:28, :]
+                else:
+                    # pad with zeros
+                    pad = np.zeros((28 - eeg_data.shape[0], eeg_data.shape[1]), dtype=np.float32)
+                    eeg_data = np.concatenate([eeg_data, pad], axis=0)
             return eeg_data, emotion_label
             
         except Exception as e:
             print(f"Warning: Failed to load EEG {eeg_file}: {e}")
             # Return dummy data to allow iteration to continue
-            return np.random.randn(30, 200).astype(np.float32), None
+            return np.random.randn(28, 200).astype(np.float32), None
     
     def _load_and_process_audio(self, audio_file: Path) -> Optional[np.ndarray]:
         """Load audio and extract MFCC features using librosa."""

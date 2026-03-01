@@ -1,13 +1,13 @@
 """Test FACED data loader."""
 
 import sys
-sys.path.insert(0, r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT")
+sys.path.insert(0, r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT")
 
 from src.preprocessing import create_faced_dataloader
 
 # Create FACED dataloader
 print("Testing FACED DataLoader...")
-faced_dir = r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT\data\raw\Processed_data\Processed_data"
+faced_dir = r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT\data\raw\Processed_data\Processed_data"
 
 dataloader, dataset = create_faced_dataloader(
     data_dir=faced_dir,

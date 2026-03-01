@@ -228,26 +228,82 @@ class AudioEncoder(nn.Module):
 
 class MultimodalFusion(nn.Module):
     """Fusion module for EEG and audio latent representations.
-    
-    By default, concatenates EEG and audio features and projects back to latent_dim.
+
+    Supports several strategies:
+    - ``concat``: simple concatenation + projection (baseline)
+    - ``cross_attention``: attend from EEG to audio features and vice versa
+    - ``gated``: per-element gating of concatenated features
+
+    A learnable per-channel weight vector is always applied to the final
+    latent representation when both modalities are present, allowing the
+    network to emphasize/ignore individual channels.
     """
-    
-    def __init__(self, latent_dim=128, fusion_dim=None):
+
+    def __init__(self, latent_dim=128, fusion_dim=None, mode: str = "concat"):
         super().__init__()
         self.latent_dim = latent_dim
+        self.mode = mode
         self.fusion_dim = fusion_dim or latent_dim * 2
-        self.fc = nn.Sequential(
-            nn.Linear(self.fusion_dim, latent_dim),
-            nn.ReLU(),
-            nn.Dropout(0.3)
-        )
-    
-    def forward(self, eeg_latent, audio_latent=None):
-        if audio_latent is not None:
-            fused = torch.cat([eeg_latent, audio_latent], dim=1)
+
+        # per-channel weighting parameter (applied after fusion)
+        self.channel_weights = nn.Parameter(torch.ones(latent_dim))
+
+        if mode == "concat":
+            self.fc = nn.Sequential(
+                nn.Linear(self.fusion_dim, latent_dim),
+                nn.ReLU(),
+                nn.Dropout(0.3)
+            )
+        elif mode == "cross_attention":
+            # simple single-head attention
+            self.query = nn.Linear(latent_dim, latent_dim)
+            self.key = nn.Linear(latent_dim, latent_dim)
+            self.value = nn.Linear(latent_dim, latent_dim)
+            self.out_proj = nn.Linear(latent_dim, latent_dim)
+        elif mode == "gated":
+            # compute gating vector from concatenated input
+            self.gate_fc = nn.Sequential(
+                nn.Linear(self.fusion_dim, latent_dim),
+                nn.Sigmoid(),
+            )
+            # final projection
+            self.proj = nn.Linear(self.fusion_dim, latent_dim)
         else:
-            fused = eeg_latent
-        return self.fc(fused)
+            raise ValueError(f"Unknown fusion mode {mode}")
+
+    def _apply_channel_weights(self, x: torch.Tensor) -> torch.Tensor:
+        # x shape: (batch, latent_dim)
+        return x * self.channel_weights.unsqueeze(0)
+
+    def forward(self, eeg_latent, audio_latent=None):
+        if audio_latent is None:
+            out = eeg_latent
+        else:
+            if self.mode == "concat":
+                fused = torch.cat([eeg_latent, audio_latent], dim=1)
+                out = self.fc(fused)
+            elif self.mode == "cross_attention":
+                # attend eeg->audio and audio->eeg then average
+                q = self.query(eeg_latent)  # (B, D)
+                k = self.key(audio_latent)
+                v = self.value(audio_latent)
+                # scaled dot-product
+                scores = torch.matmul(q, k.transpose(0, 1)) / (self.latent_dim ** 0.5)
+                attn = F.softmax(scores, dim=-1)
+                attended = torch.matmul(attn, v)
+                out = self.out_proj(attended)
+            elif self.mode == "gated":
+                concat = torch.cat([eeg_latent, audio_latent], dim=1)
+                gate = self.gate_fc(concat)  # (B, D) values in (0,1)
+                projected = self.proj(concat)
+                out = gate * projected
+            else:
+                raise ValueError(f"Unsupported fusion mode {self.mode}")
+
+        # apply per-channel weights if we have both modalities
+        if audio_latent is not None:
+            out = self._apply_channel_weights(out)
+        return out
 
 
 class EmotionClassifier(nn.Module):

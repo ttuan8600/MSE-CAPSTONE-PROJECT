@@ -1,7 +1,7 @@
 """Final verification that the training pipeline is ready."""
 
 import sys
-sys.path.insert(0, r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT")
+sys.path.insert(0, r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT")
 
 print("="*70)
 print("EMOTION RECOGNITION TRAINING PIPELINE - READINESS CHECK")
@@ -40,17 +40,17 @@ except Exception as e:
 print("\n4. Dataset Availability Check...")
 from pathlib import Path
 
-faced_dir = Path(r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT\data\raw\Processed_data\Processed_data")
+faced_dir = Path(r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT\data\raw\Processed_data\Processed_data")
 faced_files = list(faced_dir.glob("sub*.pkl"))
 print(f"   ✓ FACED subjects available: {len(faced_files)}")
 
-eav_base = Path(r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT\data\raw\EAV\EAV")
+eav_base = Path(r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT\data\raw\EAV\EAV")
 eav_subjects = [d for d in eav_base.iterdir() if d.is_dir() and d.name.startswith("subject")]
 print(f"   ✓ EAV subjects available: {len(eav_subjects)}")
 
 # 5. Check script availability
 print("\n5. Training Script Check...")
-train_script = Path(r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT\scripts\train.py")
+train_script = Path(r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT\scripts\train.py")
 if train_script.exists():
     print("   ✓ train.py available")
 else:

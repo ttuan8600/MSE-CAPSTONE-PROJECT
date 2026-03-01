@@ -1,7 +1,7 @@
 """Quick test to verify models work."""
 
 import sys
-sys.path.insert(0, r"c:\Users\ttuan8600\Documents\My Projects\MSE-CAPSTONE-PROJECT")
+sys.path.insert(0, r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT")
 
 import torch
 from src.models import EEGEncoder, EEGEncoderLSTM, EmotionClassifier
