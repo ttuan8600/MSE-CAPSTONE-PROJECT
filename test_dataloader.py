@@ -9,13 +9,15 @@ from src.preprocessing import create_faced_dataloader
 print("Testing FACED DataLoader...")
 faced_dir = r"c:\Users\ttuan8600\Documents\MyProjects\MSE-CAPSTONE-PROJECT\data\raw\Processed_data\Processed_data"
 
-dataloader, dataset = create_faced_dataloader(
+train_loader, val_loader, dataset = create_faced_dataloader(
     data_dir=faced_dir,
     batch_size=8,
     window_size=512,
     shuffle=False,
     subjects=[0, 1, 2],  # Test with first 3 subjects
+    val_split=0.0,
 )
+# We intentionally don't use val_loader in this unit test
 
 print(f"✓ FACED dataset created with {len(dataset)} windows")
 
@@ -29,5 +31,7 @@ print(f"  Labels: {label_batch.shape} (expected: [8])")
 
 assert eeg_batch.shape == (8, 28, 512), f"EEG shape mismatch: {eeg_batch.shape}"
 assert label_batch.shape == (8,), f"Label shape mismatch: {label_batch.shape}"
+# Subject labels should be within the expected range (0-122 for FACED)
+assert label_batch.max().item() < 200, "Label values look incorrect (too large)"
 
 print("\n✅ FACED DataLoader works correctly!")

@@ -9,7 +9,15 @@ def compute_spectrogram(waveform: np.ndarray, fs: float) -> np.ndarray:
     Tries to use `librosa` if available for convenience; falls back to
     SciPy's `spectrogram` function otherwise. Returns magnitude in dB
     (shape: [n_freq_bins, n_frames]).
+
+    Notes
+    -----
+    This function raises ``NotImplementedError`` when called with ``None``
+    because the caller is expected to provide a real waveform.
     """
+    if waveform is None:
+        raise NotImplementedError("waveform must not be None")
+
     # prefer librosa if installed
     try:
         import librosa
