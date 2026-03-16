@@ -576,9 +576,21 @@ def finetune(args):
         fusion_mode=args.fusion_mode,
     )
     
+    # Resume logic
+    start_epoch = 0
+    if args.resume_checkpoint is not None:
+        print(f"Resuming from checkpoint: {args.resume_checkpoint}")
+        checkpoint = torch.load(args.resume_checkpoint, map_location=device)
+        trainer.encoder.load_state_dict(checkpoint['encoder'])
+        trainer.classifier.load_state_dict(checkpoint['classifier'])
+        if hasattr(trainer, 'optimizer') and 'optimizer' in checkpoint:
+            trainer.optimizer.load_state_dict(checkpoint['optimizer'])
+        start_epoch = checkpoint.get('epoch', 0) + 1
+        print(f"Resumed at epoch {start_epoch}")
+
     # Training loop
     best_loss = float('inf')
-    for epoch in range(args.num_epochs):
+    for epoch in range(start_epoch, args.num_epochs):
         train_loss, train_acc = trainer.train_epoch(train_loader, epoch)
         val_loss, val_acc = (
             trainer.validate(val_loader, epoch) if val_loader is not None else (None, None)
@@ -648,11 +660,17 @@ def main():
     parser.add_argument("--fusion-mode", type=str, default="concat",
                        choices=["concat", "cross_attention", "gated"],
                        help="Fusion strategy to use when audio is enabled")    
+    parser.add_argument("--resume-checkpoint", type=str, default=None,
+                       help="Path to a fine-tuning checkpoint to resume from (e.g., finetuned_epoch_7.pt)")
     args = parser.parse_args()
     
-    # Add timestamp to output dir
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    args.output_dir = f"{args.output_dir}/{args.mode}_{timestamp}"
+    # Add timestamp to output dir (unless resuming)
+    if args.resume_checkpoint is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        args.output_dir = f"{args.output_dir}/{args.mode}_{timestamp}"
+    else:
+        # Use the directory of the checkpoint as output_dir
+        args.output_dir = str(Path(args.resume_checkpoint).parent)
     
     if args.mode == "pretrain":
         pretrain(args)

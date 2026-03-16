@@ -375,7 +375,7 @@ class EAVMultimodalDataset(Dataset):
             # Load audio using librosa
             import librosa
             
-            waveform, sample_rate = librosa.load(str(audio_file))
+            waveform, sample_rate = librosa.load(str(audio_file), sr=32000)
             
             # Compute MFCC features
             mfcc = librosa.feature.mfcc(
