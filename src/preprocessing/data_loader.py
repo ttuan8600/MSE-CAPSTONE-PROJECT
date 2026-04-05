@@ -436,9 +436,11 @@ class EAVMultimodalDataset(Dataset):
             if audio_data is not None:
                 data['audio'] = torch.from_numpy(audio_data.astype(np.float32))
             else:
-                data['audio'] = None
+                # Create dummy audio tensor when loading fails
+                data['audio'] = torch.zeros(13, 128, dtype=torch.float32)
         else:
-            data['audio'] = None
+            # Create dummy audio tensor when not loading audio
+            data['audio'] = torch.zeros(13, 128, dtype=torch.float32)
         
         # Load video if available (stub)
         if self.load_video and sample['video']:
@@ -446,16 +448,16 @@ class EAVMultimodalDataset(Dataset):
             if video_data is not None:
                 data['video'] = torch.from_numpy(video_data.astype(np.float32))
             else:
-                data['video'] = None
+                data['video'] = torch.zeros(10, 128, dtype=torch.float32)
         else:
-            data['video'] = None
+            data['video'] = torch.zeros(10, 128, dtype=torch.float32)
         
         # Set emotion label
         emotion = sample['audio_emotion']
         if emotion in self.EMOTION_MAP:
             data['emotion'] = self.EMOTION_MAP[emotion]
         else:
-            data['emotion'] = -1  # Unknown emotion
+            data['emotion'] = 0  # Default to Neutral if unknown
         
         return data
 

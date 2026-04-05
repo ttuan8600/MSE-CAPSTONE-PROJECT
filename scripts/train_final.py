@@ -8,6 +8,7 @@ import os
 import sys
 from pathlib import Path
 from datetime import datetime
+import json
 
 # Add project to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -17,6 +18,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
+from sklearn.metrics import confusion_matrix, classification_report
+import matplotlib.pyplot as plt
 
 from src.models.eeg_encoder import (
     EEGEncoder,
@@ -25,6 +28,16 @@ from src.models.eeg_encoder import (
     MultimodalFusion,
 )
 from src.preprocessing.data_loader import create_eav_dataloader
+
+
+# Emotion class mapping
+EMOTION_CLASSES = {
+    0: 'Neutral',
+    1: 'Anger',
+    2: 'Calmness',
+    3: 'Sadness',
+    4: 'Happiness',
+}
 
 
 def train_improved_model():
@@ -65,7 +78,7 @@ def train_improved_model():
         )
         
         dataset_size = len(dataset)
-        print(f"✓ Loaded {dataset_size} samples")
+        print(f"[OK] Loaded {dataset_size} samples")
         
         # Split data
         train_size = int(0.70 * dataset_size)
@@ -98,7 +111,7 @@ def train_improved_model():
         print(f"  Train: {train_size}, Val: {val_size}, Test: {test_size}")
     
     except Exception as e:
-        print(f"\n✗ Error loading data: {e}")
+        print(f"\n[ERROR] Error loading data: {e}")
         print("Run: pip install librosa scipy scikit-learn")
         return
     
@@ -153,8 +166,15 @@ def train_improved_model():
         
         for batch_idx, batch in enumerate(train_loader):
             try:
-                # Handle batch format
-                if isinstance(batch, (tuple, list)) and len(batch) == 2:
+                # Handle batch format from EAVMultimodalDataset
+                if isinstance(batch, dict):
+                    eeg = batch.get('eeg')
+                    audio = batch.get('audio')
+                    labels = batch.get('emotion')  # The dataset returns 'emotion' key
+                    
+                    if eeg is None or labels is None:
+                        continue
+                elif isinstance(batch, (tuple, list)) and len(batch) == 2:
                     if isinstance(batch[0], dict):
                         batch_dict, labels = batch
                         eeg = batch_dict.get('eeg')
@@ -162,9 +182,7 @@ def train_improved_model():
                     else:
                         continue
                 else:
-                    eeg = batch.get('eeg')
-                    audio = batch.get('audio')
-                    labels = batch.get('label')
+                    continue
                 
                 if eeg is None or labels is None:
                     continue
@@ -218,7 +236,15 @@ def train_improved_model():
         with torch.no_grad():
             for batch in val_loader:
                 try:
-                    if isinstance(batch, (tuple, list)) and len(batch) == 2:
+                    # Handle batch format from EAVMultimodalDataset
+                    if isinstance(batch, dict):
+                        eeg = batch.get('eeg')
+                        audio = batch.get('audio')
+                        labels = batch.get('emotion')  # The dataset returns 'emotion' key
+                        
+                        if eeg is None or labels is None:
+                            continue
+                    elif isinstance(batch, (tuple, list)) and len(batch) == 2:
                         if isinstance(batch[0], dict):
                             batch_dict, labels = batch
                             eeg = batch_dict.get('eeg')
@@ -226,9 +252,7 @@ def train_improved_model():
                         else:
                             continue
                     else:
-                        eeg = batch.get('eeg')
-                        audio = batch.get('audio')
-                        labels = batch.get('label')
+                        continue
                     
                     if eeg is None or labels is None:
                         continue
@@ -284,11 +308,21 @@ def train_improved_model():
     
     test_correct = 0
     test_samples = 0
+    all_preds = []
+    all_labels = []
     
     with torch.no_grad():
         for batch in test_loader:
             try:
-                if isinstance(batch, (tuple, list)) and len(batch) == 2:
+                # Handle batch format from EAVMultimodalDataset
+                if isinstance(batch, dict):
+                    eeg = batch.get('eeg')
+                    audio = batch.get('audio')
+                    labels = batch.get('emotion')  # The dataset returns 'emotion' key
+                    
+                    if eeg is None or labels is None:
+                        continue
+                elif isinstance(batch, (tuple, list)) and len(batch) == 2:
                     if isinstance(batch[0], dict):
                         batch_dict, labels = batch
                         eeg = batch_dict.get('eeg')
@@ -296,9 +330,7 @@ def train_improved_model():
                     else:
                         continue
                 else:
-                    eeg = batch.get('eeg')
-                    audio = batch.get('audio')
-                    labels = batch.get('label')
+                    continue
                 
                 if eeg is None or labels is None:
                     continue
@@ -315,14 +347,56 @@ def train_improved_model():
                     fused = eeg_latent
                 
                 logits = classifier(fused)
-                test_correct += (logits.argmax(dim=1) == labels).sum().item()
+                preds = logits.argmax(dim=1)
+                
+                test_correct += (preds == labels).sum().item()
                 test_samples += labels.size(0)
+                
+                all_preds.extend(preds.cpu().numpy())
+                all_labels.extend(labels.cpu().numpy())
             
             except Exception as e:
                 continue
     
+    all_preds = np.array(all_preds)
+    all_labels = np.array(all_labels)
     test_acc = test_correct / test_samples if test_samples > 0 else 0
-    print(f"TEST ACCURACY: {test_acc:.4f}")
+    
+    # Per-class accuracy
+    print(f"\n{'='*70}")
+    print("PER-CLASS ACCURACY")
+    print(f"{'='*70}")
+    
+    per_class_acc = {}
+    for class_id in range(5):
+        mask = all_labels == class_id
+        if mask.sum() > 0:
+            class_acc = (all_preds[mask] == all_labels[mask]).sum() / mask.sum()
+            per_class_acc[class_id] = class_acc
+            print(f"  {EMOTION_CLASSES[class_id]:12s}: {class_acc:.4f} ({mask.sum()} samples)")
+    
+    print(f"\nTEST ACCURACY (Overall): {test_acc:.4f}")
+    
+    # Confusion matrix
+    conf_matrix = confusion_matrix(all_labels, all_preds)
+    
+    # Save results
+    output_dir = Path(f"outputs/finetuned_final_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    results = {
+        'config': config,
+        'best_val_acc': float(best_val_acc),
+        'best_epoch': best_epoch,
+        'test_acc': float(test_acc),
+        'per_class_acc': {EMOTION_CLASSES[k]: float(v) for k, v in per_class_acc.items()},
+        'confusion_matrix': conf_matrix.tolist(),
+    }
+    
+    with open(output_dir / 'results.json', 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    print(f"\nResults saved to {output_dir}")
     
     print(f"\n{'='*70}")
     print("SUMMARY")
@@ -331,6 +405,7 @@ def train_improved_model():
     print(f"Best Validation Acc: {best_val_acc:.4f}")
     print(f"Test Accuracy: {test_acc:.4f}")
     print(f"Improvement vs baseline: +{(test_acc-0.21)*100:.1f}%")
+    print(f"Output directory: {output_dir}")
     print(f"{'='*70}\n")
 
 
