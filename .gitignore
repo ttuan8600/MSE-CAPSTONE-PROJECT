@@ -207,3 +207,49 @@ marimo/_lsp/
 __marimo__/
 context.md
 data/
+
+# ============================================
+# Thesis/Report Files - Keep Private
+# ============================================
+# Thesis report directories
+MSE-CAPSTONE-REPORT/
+MSE-CAPSTONE-REPORT_new/
+MSE_CAPSTONE_REPORT_new/
+template_report/
+
+# LaTeX and report artifacts
+*.tex
+*.pdf
+*.bib
+*.aux
+*.log
+*.toc
+*.out
+*.blg
+*.bbl
+*.lof
+*.lot
+
+# Report-related markdown files (internal documentation)
+BASELINE_*.md
+README_BASELINE.md
+TRAINING_*.md
+IMPLEMENTATION_SUMMARY.md
+DOCUMENTATION_INDEX.md
+FUSION_*.md
+QUICKSTART.md
+TRAINING_GUIDE.md
+PROJECT_REPORT.tex
+
+# Output/Results directories
+outputs/
+notebook_*.ipynb
+
+# Experiment data and checkpoints
+pretrain_*/
+finetune_*/
+optimized_training_*/
+advanced_training_*/
+*.pt
+comparison_*.json
+SUBMISSION_STATUS.md

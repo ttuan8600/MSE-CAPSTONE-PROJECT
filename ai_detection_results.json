@@ -1,0 +1,379 @@
+{
+  "average": 0.2994285598792914,
+  "chapters": [
+    {
+      "chapter": "ch01_introduction.tex",
+      "ai_likelihood": 0.3235588751069792,
+      "indicators": [
+        "Perfect grammar (unnaturally consistent)",
+        "Uniform paragraph structure (variance: 89.1)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.024528301886792447,
+          4
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.014150943396226412,
+          "90%"
+        ],
+        "generic_phrases": [
+          0.022641509433962263,
+          2
+        ],
+        "vocabulary": [
+          0.009433962264150945,
+          1
+        ],
+        "uniformity": [
+          0.052804158125847156,
+          "89.1"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "1 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch02_literature.tex",
+      "ai_likelihood": 0.24838709677419354,
+      "indicators": [
+        "Perfect grammar (unnaturally consistent)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.0,
+          4
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.029032258064516134,
+          "80%"
+        ],
+        "generic_phrases": [
+          0.019354838709677417,
+          1
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.0,
+          "558.4"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "0 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch03_methodology.tex",
+      "ai_likelihood": 0.31875,
+      "indicators": [
+        "Few contractions (very AI-like): only 0",
+        "Perfect grammar (unnaturally consistent)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.1,
+          0
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.01875,
+          "87%"
+        ],
+        "generic_phrases": [
+          0.0,
+          0
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.0,
+          "4529.1"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "3 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch04_experiments.tex",
+      "ai_likelihood": 0.2090909090909091,
+      "indicators": [
+        "Perfect grammar (unnaturally consistent)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.009090909090909094,
+          1
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.0,
+          "100%"
+        ],
+        "generic_phrases": [
+          0.0,
+          0
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.0,
+          "2906.2"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "5 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch05_results.tex",
+      "ai_likelihood": 0.32784999118432406,
+      "indicators": [
+        "Perfect grammar (unnaturally consistent)",
+        "Uniform paragraph structure (variance: 83.6)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.043089430894308944,
+          7
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.02560975609756098,
+          "82%"
+        ],
+        "generic_phrases": [
+          0.004878048780487805,
+          1
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.05427275541196635,
+          "83.6"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "12 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch06_discussion.tex",
+      "ai_likelihood": 0.26153846153846155,
+      "indicators": [
+        "Perfect grammar (unnaturally consistent)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.019230769230769232,
+          1
+        ],
+        "contractions": [
+          0.0,
+          6
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.026923076923076928,
+          "82%"
+        ],
+        "generic_phrases": [
+          0.015384615384615384,
+          1
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.0,
+          "939.9"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "8 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch07_conclusion.tex",
+      "ai_likelihood": 0.3175,
+      "indicators": [
+        "Perfect grammar (unnaturally consistent)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.05,
+          2
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.0375,
+          "75%"
+        ],
+        "generic_phrases": [
+          0.03,
+          2
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.0,
+          "1018.0"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.0,
+          "7 metrics"
+        ]
+      }
+    },
+    {
+      "chapter": "ch08_appendix.tex",
+      "ai_likelihood": 0.388753145339464,
+      "indicators": [
+        "Few contractions (very AI-like): only 2",
+        "Perfect grammar (unnaturally consistent)",
+        "Uniform paragraph structure (variance: 67.7)",
+        "Minimal personal voice: only 0 personal references"
+      ],
+      "details": {
+        "formal_transitions": [
+          0.0,
+          0
+        ],
+        "contractions": [
+          0.08076923076923077,
+          2
+        ],
+        "grammar": [
+          0.12,
+          0
+        ],
+        "repetition": [
+          0.030288461538461528,
+          "79%"
+        ],
+        "generic_phrases": [
+          0.0057692307692307696,
+          1
+        ],
+        "vocabulary": [
+          0.0,
+          0
+        ],
+        "uniformity": [
+          0.058849299185617834,
+          "67.7"
+        ],
+        "personal_voice": [
+          0.08,
+          0
+        ],
+        "specificity": [
+          0.013076923076923075,
+          "0 metrics"
+        ]
+      }
+    }
+  ],
+  "timestamp": "2026-04-06T23:57:59.941273"
+}
