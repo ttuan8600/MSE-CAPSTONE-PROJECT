@@ -222,7 +222,6 @@ template_report/
 *.pdf
 *.bib
 *.aux
-*.log
 *.toc
 *.out
 *.blg
