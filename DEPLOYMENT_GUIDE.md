@@ -1,10 +1,15 @@
 # 🚀 DEPLOYMENT GUIDE
 
 **Model**: Attention Fusion for Multimodal Emotion Recognition  
-**Version**: 2.0 (Finetuned)  
-**Accuracy**: 82.06%  
-**Status**: ✅ Production Ready  
-**Updated**: April 5, 2026
+**Version**: 2.0  
+**Held-out test accuracy**: 78.57% (see [CHANGELOG.md](CHANGELOG.md))  
+**Status**: ✅ Deployable  
+**Updated**: August 8, 2026
+
+> The previously stated 82.06% is not supported by any result artifact, and the
+> fine-tuned checkpoint has no uncontaminated evaluation. Deploy
+> `attention_fusion_model_best.pt` and cite 78.57%. See
+> [CHANGELOG.md](CHANGELOG.md#known-measurement-issue-traintest-contamination).
 
 ---
 
@@ -34,7 +39,7 @@ import torch
 from src.models.eeg_encoder import EEGEncoder, AudioEncoder, EmotionClassifier
 from src.models.attention_fusion import CrossModalAttentionFusion
 
-# Load production model (82.06% accuracy)
+# Load production model (78.57% held-out test accuracy)
 checkpoint = torch.load('outputs/attention_fusion_model_best.pt')
 encoder, audio_encoder = EEGEncoder(), AudioEncoder()
 attention_fusion = CrossModalAttentionFusion()
@@ -46,7 +51,7 @@ for model, key in [(encoder, 'encoder'), (audio_encoder, 'audio_encoder'),
     model.load_state_dict(checkpoint[key])
     model.eval()
 
-print('✅ Model loaded: 82.06% accuracy')
+print('✅ Model loaded: 78.57% held-out test accuracy')
 "
 ```
 
@@ -100,6 +105,12 @@ ls -la outputs/attention_fusion_model_best.pt
 ---
 
 ## Using the Model
+
+> **Note:** the example below loads `focal_loss_model_best.pt` with
+> `MultimodalFusion(mode='gated')` — that is the **older focal-loss model (63.02%)**,
+> not the model of record. To deploy the attention fusion model, use the Quick Start
+> snippet above, which loads `attention_fusion_model_best.pt` with
+> `CrossModalAttentionFusion`.
 
 ### Basic Inference (Recommended)
 
@@ -246,13 +257,20 @@ predictor = EmotionPredictor('outputs/focal_loss_model_best.pt')
 
 ### Accuracy by Emotion
 
+Model of record — attention fusion, `attention_fusion_model_best.pt`, 78.57% overall
+(`outputs/attention_fusion_20260401_182606/results.json`):
+
 | Emotion   | Accuracy | Reliability          |
 | --------- | -------- | -------------------- |
-| Anger     | 79.2%    | ⭐⭐⭐⭐⭐ Excellent |
-| Sadness   | 74.6%    | ⭐⭐⭐⭐⭐ Excellent |
-| Neutral   | 60.6%    | ⭐⭐⭐ Good          |
-| Calmness  | 48.7%    | ⭐⭐ Fair            |
-| Happiness | 49.6%    | ⭐⭐ Fair            |
+| Sadness   | 88.46%   | ⭐⭐⭐⭐⭐ Excellent |
+| Anger     | 84.62%   | ⭐⭐⭐⭐⭐ Excellent |
+| Calmness  | 79.13%   | ⭐⭐⭐⭐ Good        |
+| Neutral   | 72.73%   | ⭐⭐⭐ Good          |
+| Happiness | 67.48%   | ⭐⭐⭐ Fair          |
+
+> An earlier revision of this table listed 79.2 / 74.6 / 60.6 / 48.7 / 49.6. Those are
+> the **focal-loss CNN's** per-class figures (63.02% overall), not the attention
+> fusion model's.
 
 ### Latency
 

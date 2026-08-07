@@ -81,43 +81,30 @@ published to this repository:
 
 ---
 
-## 🎯 Latest Results: Production Model (April 5, 2026)
+## 🎯 Results
 
-### Current Production Accuracy
+**[CHANGELOG.md](CHANGELOG.md) is the single source of truth** for model status and
+accuracy. Every number there is traced to an artifact under `outputs/`.
 
-| Metric                        | Value       | Status     |
-| ----------------------------- | ----------- | ---------- |
-| **Production Model Accuracy** | **82.06%**  | ✅ Live    |
-| **Previous Accuracy**         | 78.57%      | Archived   |
-| **Improvement**               | **+3.49pp** | ⬆️ Upgrade |
+### Model of record
 
-### Model Details
+| Metric                     | Value                                        |
+| -------------------------- | -------------------------------------------- |
+| **Architecture**           | Cross-Modal Attention Fusion (4-head), ~920K params |
+| **Held-out test accuracy** | **78.57%**                                   |
+| **Validation accuracy**    | 75.87% (best epoch 36/40)                    |
+| **Checkpoint**             | `outputs/attention_fusion_model_best.pt`     |
+| **Artifact**               | `outputs/attention_fusion_20260401_182606/results.json` |
 
-- **Architecture**: Cross-Modal Attention Fusion (4-head multi-head attention)
-- **Parameters**: ~920K total
-- **Deployment Date**: April 5, 2026
-- **Checkpoint**: `outputs/attention_fusion_model_best.pt`
-- **Backup**: `outputs/attention_fusion_model_baseline_backup_20260405.pt`
+Clean progression: gated fusion 52.22% → focal-loss CNN 63.02% → **attention fusion 78.57%**.
 
-### Recent Improvements
-
-- ✅ **Fine-tuning with Data Augmentation**: +3.49pp improvement
-  - SpecAugment: Time/frequency masking on audio
-  - EEG Jitter: Gaussian noise (σ=0.01)
-  - Lower learning rate (1e-4) for careful parameter updates
-  - Results in [FINETUNING_RESULTS_SUMMARY.md](FINETUNING_RESULTS_SUMMARY.md)
-
-### Training Configuration
-
-```python
-# Fine-tuning Hyperparameters
-optimizer: Adam
-learning_rate: 1e-4
-loss_function: Focal Loss (γ=2.0, α-weighted)
-data_augmentation: SpecAugment + EEG Jitter
-early_stopping: patience=5 epochs
-convergence: Epoch 11/20 with ~82% accuracy
-```
+> **⚠️ Do not cite 82.06%, 84.44%, or "+3.49pp".** Those figures appear throughout
+> the archived documentation but are not supported by any artifact. `82.06` is a
+> hardcoded literal (`scripts/deploy_finetuned_model.py:69`); the 84.xx% figures come
+> from an evaluation whose "test set" was 69% training data, caused by the training
+> and evaluation scripts seeding different random number generators. The only real
+> fine-tuning comparison recorded **-0.48pp**. See
+> [CHANGELOG.md](CHANGELOG.md#known-measurement-issue-traintest-contamination).
 
 ### Deployment & Usage
 
@@ -141,18 +128,20 @@ audio_encoder.load_state_dict(checkpoint['audio_encoder'])
 attention_fusion.load_state_dict(checkpoint['attention_fusion'])
 classifier.load_state_dict(checkpoint['classifier'])
 
-# Inference (82.06% accuracy)
+# Inference (78.57% held-out test accuracy)
 eeg_features = encoder(eeg_data)
 audio_features = audio_encoder(audio_data)
 fused = attention_fusion(eeg_features, audio_features)
 predictions = classifier(fused)
 ```
 
-### Documentation for Latest Release
+### Documentation
 
-- [DEPLOYMENT_CHANGELOG.md](DEPLOYMENT_CHANGELOG.md) - Detailed deployment changes & rollback instructions
-- [MODEL_PERFORMANCE_COMPARISON.md](MODEL_PERFORMANCE_COMPARISON.md) - Baseline vs Finetuned comparison
+- [CHANGELOG.md](CHANGELOG.md) - **Results of record, experiment history, and open gaps**
 - [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - How to use and deploy the model
-- [FINETUNING_RESULTS_SUMMARY.md](FINETUNING_RESULTS_SUMMARY.md) - Fine-tuning training results
+- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - REST API reference
+
+Superseded status reports are retained in [docs/archive/](docs/archive/) for
+provenance. They contain the disputed figures noted above and should not be cited.
 
 ---
