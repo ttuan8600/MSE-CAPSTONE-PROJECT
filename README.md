@@ -71,10 +71,13 @@ python scripts/train.py --use-audio --fusion-mode gated --num-epochs 5
 
 ### Documentation
 
-- [FUSION_IMPROVEMENTS_SUMMARY.md](FUSION_IMPROVEMENTS_SUMMARY.md) Detailed fusion modes and performance
-- [README_BASELINE.md](README_BASELINE.md) Baseline experiments with CLI options
-- [TRAINING_GUIDE.md](TRAINING_GUIDE.md) Complete training pipeline documentation
-- [BASELINE_FLOWCHART.md](BASELINE_FLOWCHART.md) Architecture and dataflow diagrams
+Detailed baseline, fusion, and training notes are kept locally and are not
+published to this repository:
+
+- `FUSION_IMPROVEMENTS_SUMMARY.md` Detailed fusion modes and performance
+- `README_BASELINE.md` Baseline experiments with CLI options
+- `TRAINING_GUIDE.md` Complete training pipeline documentation
+- `BASELINE_FLOWCHART.md` Architecture and dataflow diagrams
 
 ---
 
