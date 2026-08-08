@@ -34,7 +34,8 @@ This project supports two main datasets:
 - **FACED (Finer-grained Affective Computing EEG Dataset)**: pre-processed into `.pkl` files and stored under `data/raw/Processed_data/Processed_data/` (e.g., `sub000.pkl`, `sub001.pkl`, ...). This is used for pre-training the EEG encoder.
 - **EAV Multimodal Dataset**: raw multimodal data under `data/raw/EAV/EAV/` (EEG, audio, video). Used for fine-tuning.
 
-## Processed files should go in `data/processed/` after running preprocessing scripts. Avoid committing large data files to version control; add them to `.gitignore` if necessary.
+Processed files should go in `data/processed/` after running preprocessing scripts.
+Avoid committing large data files to version control; add them to `.gitignore` if necessary.
 
 ## Current Status: Multimodal Fusion Baseline
 
@@ -45,34 +46,30 @@ This project supports two main datasets:
 - **EEG Encoder**: 4-layer 1D-CNN 128-D latent
 - **Audio Encoder**: 2-layer CNN processing MFCC 128-D
 - **Multimodal Fusion** with **3 modes**:
-  - \concat\: Concatenation + projection (baseline)
-  - \cross_attention\: Cross-modal attention pooling
-  - \gated\: Element-wise gating (adaptive weighting)
+  - `concat`: Concatenation + projection (baseline)
+  - `cross_attention`: Cross-modal attention pooling
+  - `gated`: Element-wise gating (adaptive weighting)
 - **Per-channel learnable weights**: Independent scaling per modality
 - **Emotion Classifier**: 3-layer head 5 class logits
 
 ### Quick Start
 
-\\\ash
-
+```bash
 # Run all tests (9/9 passing)
-
 pytest tests/test_models.py -v
 
 # Test fusion modes on synthetic data
-
 python scripts/baseline_experiment.py --use-audio --fusion-mode concat
 python scripts/baseline_experiment.py --use-audio --fusion-mode cross_attention
 
 # Train on real data with fusion mode selection
-
 python scripts/train.py --use-audio --fusion-mode gated --num-epochs 5
-\\\
+```
 
 ### Documentation
 
-Detailed baseline, fusion, and training notes are kept locally and are not
-published to this repository:
+Detailed baseline, fusion, and training notes are kept locally in
+`docs/archive/` and are not published to this repository:
 
 - `FUSION_IMPROVEMENTS_SUMMARY.md` Detailed fusion modes and performance
 - `README_BASELINE.md` Baseline experiments with CLI options
@@ -83,7 +80,7 @@ published to this repository:
 
 ## 🎯 Results
 
-**[CHANGELOG.md](CHANGELOG.md) is the single source of truth** for model status and
+**[CHANGELOG.md](docs/CHANGELOG.md) is the single source of truth** for model status and
 accuracy. Every number there is traced to an artifact under `outputs/`.
 
 ### Model of record
@@ -104,7 +101,7 @@ Clean progression: gated fusion 52.22% → focal-loss CNN 63.02% → **attention
 > from an evaluation whose "test set" was 69% training data, caused by the training
 > and evaluation scripts seeding different random number generators. The only real
 > fine-tuning comparison recorded **-0.48pp**. See
-> [CHANGELOG.md](CHANGELOG.md#known-measurement-issue-traintest-contamination).
+> [CHANGELOG.md](docs/CHANGELOG.md#known-measurement-issue-traintest-contamination).
 
 ### Deployment & Usage
 
@@ -137,9 +134,9 @@ predictions = classifier(fused)
 
 ### Documentation
 
-- [CHANGELOG.md](CHANGELOG.md) - **Results of record, experiment history, and open gaps**
-- [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) - How to use and deploy the model
-- [API_DOCUMENTATION.md](API_DOCUMENTATION.md) - REST API reference
+- [CHANGELOG.md](docs/CHANGELOG.md) - **Results of record, experiment history, and open gaps**
+- [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) - How to use and deploy the model
+- [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) - REST API reference
 
 Superseded status reports are retained in [docs/archive/](docs/archive/) for
 provenance. They contain the disputed figures noted above and should not be cited.
