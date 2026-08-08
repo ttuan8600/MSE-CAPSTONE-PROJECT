@@ -1,27 +1,16 @@
-"""API Dependencies - Install with: pip install -r requirements_api.txt"""
+# REST API dependencies for app.py.
+# Install on top of requirements.txt:
+#
+#   pip install -r requirements.txt
+#   pip install -r requirements_api.txt
+#
+# This file intentionally does NOT pin torch/numpy/scipy/scikit-learn. Those come
+# from requirements.txt; pinning them again here previously produced a conflicting
+# resolution (torch 2.0.0 vs 2.7.1, numpy 1.24.3 vs 2.4.2).
 
-# Core Framework
-flask==2.3.3
-flask-cors==4.0.0
+flask==3.1.2
+flask-cors==6.0.1
+requests==2.32.5
 
-# PyTorch and Deep Learning
-torch==2.0.0
-torchvision==0.15.0
-numpy==1.24.3
-
-# Data Processing
-scipy==1.11.2
-scikit-learn==1.3.0
-
-# API Clients
-requests==2.31.0
-
-# Production Server (optional)
-gunicorn==21.2.0
-
-# Development (optional)
-pytest==7.4.0
-pytest-cov==4.1.0
-
-# Environment
-python-dotenv==1.0.0
+# Production WSGI server. Not available on Windows.
+gunicorn==23.0.0; sys_platform != "win32"

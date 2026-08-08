@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Verifies the exact sequence a new machine runs after `git clone`.
+  # If this job passes, the setup instructions in docs/SETUP.md are known good.
+  setup-and-test:
+    name: Setup & tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install runtime dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install package (editable)
+        run: pip install -e .
+
+      - name: Install dev dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Verify imports resolve
+        run: |
+          python -c "import torch, librosa, sklearn, numpy, pandas"
+          python -c "from src.models.attention_fusion import CrossModalAttentionFusion"
+          python -c "from src.models.eeg_encoder import EEGEncoder, AudioEncoder, EmotionClassifier"
+          python -c "from src.preprocessing.data_loader import EAVMultimodalDataset, FAEDDataset"
+
+      - name: Run tests
+        run: pytest -v
+
+      - name: Verify API dependencies resolve
+        run: |
+          pip install -r requirements_api.txt
+          python -c "import flask, flask_cors, requests"
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      # Syntax errors and undefined names only. The wider style pass is
+      # advisory and does not fail the build.
+      - name: Fail on syntax errors and undefined names
+        run: flake8 src tests --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Style report (advisory)
+        run: flake8 src tests --count --exit-zero --max-line-length=88 --statistics

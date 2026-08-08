@@ -1,21 +1,30 @@
-# Core dependencies
-numpy
-scipy
-pandas
-matplotlib
-seaborn
-scikit-learn
-torch
-torchaudio
-mne
-# Optional for data handling
-h5py
-# For progress bars
-tqdm
-# GPU support will be handled by user-specific torch installation
+# Runtime dependencies, pinned to the versions this project was validated against.
+# Requires Python >= 3.11 (numpy/pandas/scipy/scikit-learn floors).
+#
+#   pip install -r requirements.txt
+#   pip install -e .          # makes `import src...` work
+#
+# For the REST API, also install requirements_api.txt.
+# For tests and linting, also install requirements-dev.txt.
 
-# Development dependencies
-pytest
-black
-flake8
-jupyter
+# Core scientific stack
+numpy==2.4.2
+scipy==1.17.1
+pandas==3.0.1
+matplotlib==3.10.8
+seaborn==0.13.2
+scikit-learn==1.8.0
+
+# Deep learning.
+# These resolve to CPU wheels from PyPI, which is what the project runs on
+# (inference is CPU-only). For a CUDA build, install torch/torchaudio from the
+# PyTorch index instead -- see docs/SETUP.md.
+torch==2.7.1
+torchaudio==2.7.1
+
+# Audio feature extraction. Required at import time by
+# src/preprocessing/data_loader.py -- the EAV loader cannot run without it.
+librosa==0.11.0
+
+# Utilities
+tqdm==4.67.3

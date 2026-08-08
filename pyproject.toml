@@ -1,23 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "emoai"
 version = "0.1.0"
-description = "GAN-based multimodal emotion recognition framework."
-authors = ["tuan8600 <>"]
+description = "Multimodal emotion recognition from EEG and speech with cross-modal attention fusion."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
+authors = [{ name = "tuan8600" }]
 
-[project.dependencies]
-numpy = "*"
-scipy = "*"
-pandas = "*"
-matplotlib = "*"
-seaborn = "*"
-scikit-learn = "*"
-torch = "*"
-torchaudio = "*"
-mne = "*"
-h5py = "*"
-tqdm = "*"
+# Floors, not pins. For a reproducible install use requirements.txt,
+# which pins the exact versions this project was validated against.
+dependencies = [
+    "numpy>=2.0",
+    "scipy>=1.13",
+    "pandas>=2.2",
+    "matplotlib>=3.9",
+    "seaborn>=0.13",
+    "scikit-learn>=1.5",
+    "torch>=2.4",
+    "torchaudio>=2.4",
+    "librosa>=0.10",
+    "tqdm>=4.66",
+]
 
 [project.optional-dependencies]
-dev = ["pytest", "black", "flake8", "jupyter"]
+# REST API server (app.py)
+api = [
+    "flask>=3.0",
+    "flask-cors>=4.0",
+    "requests>=2.31",
+    "gunicorn>=21.2; sys_platform != 'win32'",
+]
+dev = [
+    "pytest>=8.0",
+    "black>=24.0",
+    "flake8>=7.0",
+    "jupyter>=1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]

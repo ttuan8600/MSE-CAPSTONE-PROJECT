@@ -2,7 +2,8 @@
 
 | Document | Purpose |
 | --- | --- |
-| [CHANGELOG.md](CHANGELOG.md) | **Results of record.** Current model, verified accuracy, experiment history, known measurement issues, open gaps. Start here. |
+| [SETUP.md](SETUP.md) | **Start here on a new machine.** Environment, datasets, model checkpoints, troubleshooting. |
+| [CHANGELOG.md](CHANGELOG.md) | **Results of record.** Current model, verified accuracy, experiment history, known measurement issues, open gaps. |
 | [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) | Loading the model, inference, deployment scenarios, rollback. |
 | [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | REST API endpoint reference for `app.py`. |
 

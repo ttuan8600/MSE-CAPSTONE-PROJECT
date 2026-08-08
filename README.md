@@ -4,28 +4,28 @@ This is the capstone project for the FPT Master of Software Engineering.
 
 ## 🚀 Quick Start
 
-1. **Create & activate** a virtual environment (already present `.venv`):
-   ```powershell
-   & ".\.venv\Scripts\Activate.ps1"
-   ```
-2. **Install dependencies**:
-   ```powershell
-   pip install -r requirements.txt
-   ```
-3. **Install package in editable mode** (enables imports from `src`):
-   ```powershell
-   pip install -e .
-   ```
-4. **Run tests**:
-   ```powershell
-   pytest
-   ```
-5. **Launch the pipeline stub**:
-   ```powershell
-   python scripts\run_pipeline.py
-   ```
+Requires **Python 3.11+**. Full instructions, including datasets and model
+checkpoints, are in **[docs/SETUP.md](docs/SETUP.md)**.
 
-Feel free to explore `src/preprocessing`, `src/gan`, and `src/models` for existing placeholders.
+```bash
+git clone https://github.com/ttuan8600/MSE-CAPSTONE-PROJECT.git
+cd MSE-CAPSTONE-PROJECT
+
+python -m venv .venv
+source .venv/bin/activate           # Windows: .\.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+pip install -e .                    # required so `import src...` resolves
+
+pytest                              # expect 9 passed
+```
+
+> **A fresh clone contains code only.** The datasets (~47 GB) and trained model
+> checkpoints are excluded from git and must be transferred separately — see
+> [docs/SETUP.md](docs/SETUP.md#3-datasets-not-in-git). The test suite passes
+> without them, but training and inference need them.
+
+Explore `src/preprocessing`, `src/gan`, and `src/models` for the implementation.
 
 ## 📁 Data
 
