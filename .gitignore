@@ -206,7 +206,10 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 context.md
-data/
+# Anchored to the repository root: an unanchored "data/" also matches src/data/,
+# which silently excluded the subject-wise split implementation that
+# scripts/train_attention_fusion.py and the test suite both import.
+/data/
 
 # ============================================
 # Thesis/Report Files - Keep Private
