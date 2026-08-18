@@ -42,6 +42,24 @@ jobs:
           python -c "from src.models.attention_fusion import CrossModalAttentionFusion"
           python -c "from src.models.eeg_encoder import EEGEncoder, AudioEncoder, EmotionClassifier"
           python -c "from src.preprocessing.data_loader import EAVMultimodalDataset, FAEDDataset"
+          python -c "from src.preprocessing.eav_io import load_subject_segments"
+          python -c "from src.preprocessing.eav_labels import decode_label_matrix"
+          python -c "from src.data.splits import subject_independent_split"
+          python -c "from src.inference import EmotionPredictor, EmotionRecognitionModel"
+
+      # Guards the defect class described in docs/DATA_CORRECTIONS.md: a split
+      # that puts the same subject on both sides of the train/test boundary.
+      - name: Verify split is subject-independent
+        run: |
+          python -c "
+          import numpy as np
+          from src.data.splits import subject_independent_split
+          ids = np.repeat(np.arange(1, 43), 100)
+          s = subject_independent_split(ids)
+          train, test = set(ids[s.train]), set(ids[s.test])
+          assert not (train & test), 'subject leaked between train and test'
+          print('subject-independent split OK:', s.sizes)
+          "
 
       - name: Run tests
         run: pytest -v
