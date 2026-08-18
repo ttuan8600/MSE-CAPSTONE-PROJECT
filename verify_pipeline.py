@@ -11,7 +11,7 @@ print("="*70)
 print("\n1. Model Architecture Check...")
 try:
     from src.models import EEGEncoder, EEGEncoderLSTM, EmotionClassifier
-    encoder = EEGEncoder(in_channels=28, latent_dim=128)
+    encoder = EEGEncoder(in_channels=30, latent_dim=128)
     classifier = EmotionClassifier(latent_dim=128, num_emotions=5)
     print("   ✓ EEGEncoder loaded")
     print("   ✓ EmotionClassifier loaded")

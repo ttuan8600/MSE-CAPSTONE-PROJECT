@@ -26,14 +26,14 @@ def example_1_basic_inference():
     print("="*70)
     
     # Load model
-    model_path = 'outputs/attention_fusion_model_best.pt'
+    model_path = 'outputs/model_of_record.pt'
     predictor = EmotionPredictor(model_path, device='cpu')
     
     # Create dummy EEG data (28 channels, 512 time steps)
-    eeg_data = np.random.randn(28, 512).astype(np.float32)
+    eeg_data = np.random.randn(30, 2500).astype(np.float32)
     
     # Create dummy audio data (13 MFCC channels, 128 time steps)
-    audio_data = np.random.randn(13, 128).astype(np.float32)
+    audio_data = np.random.randn(13, 2101).astype(np.float32)
     
     # Make prediction
     result = predictor.predict(eeg_data, audio_data)
@@ -58,7 +58,7 @@ def example_2_real_data():
     print("EXAMPLE 2: Inference with Real Data")
     print("="*70)
     
-    predictor = EmotionPredictor('outputs/attention_fusion_model_best.pt', device='cpu')
+    predictor = EmotionPredictor('outputs/model_of_record.pt', device='cpu')
     
     # Try to load real data if available
     data_dir = Path('data/raw/EAV/EAV/subject1/EEG')
@@ -94,7 +94,7 @@ def example_2_real_data():
         print(f"Data directory not found: {data_dir}")
         print("Using dummy data instead...")
         
-        eeg_data = np.random.randn(28, 512).astype(np.float32)
+        eeg_data = np.random.randn(30, 2500).astype(np.float32)
         result = predictor.predict(eeg_data)
         
         print(f"Prediction: {result['emotion']}")
@@ -107,11 +107,11 @@ def example_3_batch_processing():
     print("EXAMPLE 3: Batch Processing")
     print("="*70)
     
-    predictor = EmotionPredictor('outputs/attention_fusion_model_best.pt', device='cpu')
+    predictor = EmotionPredictor('outputs/model_of_record.pt', device='cpu')
     
     # Generate batch of dummy data
     batch_size = 5
-    eeg_batch = [np.random.randn(28, 512).astype(np.float32) for _ in range(batch_size)]
+    eeg_batch = [np.random.randn(30, 2500).astype(np.float32) for _ in range(batch_size)]
     
     print(f"\nProcessing {batch_size} samples...")
     results = predictor.batch_predict(eeg_batch)
@@ -142,8 +142,8 @@ def example_4_from_json():
     
     # Create sample JSON file
     sample_data = {
-        "eeg": np.random.randn(28, 512).tolist(),
-        "audio": np.random.randn(13, 128).tolist(),
+        "eeg": np.random.randn(30, 2500).tolist(),
+        "audio": np.random.randn(13, 2101).tolist(),
         "sample_id": "test_001"
     }
     
@@ -157,7 +157,7 @@ def example_4_from_json():
     with open(json_file) as f:
         data = json.load(f)
     
-    predictor = EmotionPredictor('outputs/attention_fusion_model_best.pt', device='cpu')
+    predictor = EmotionPredictor('outputs/model_of_record.pt', device='cpu')
     
     eeg = np.array(data['eeg'], dtype=np.float32)
     audio = np.array(data['audio'], dtype=np.float32)
@@ -210,8 +210,8 @@ This example shows how to use the REST API.
    
    # Single prediction
    data = {
-       "eeg": np.random.randn(28, 512).tolist(),
-       "audio": np.random.randn(13, 128).tolist()
+       "eeg": np.random.randn(30, 2500).tolist(),
+       "audio": np.random.randn(13, 2101).tolist()
    }
    
    response = requests.post('http://localhost:5000/predict', json=data)
@@ -225,7 +225,7 @@ def example_6_save_load_results():
     print("EXAMPLE 6: Save and Load Results")
     print("="*70)
     
-    predictor = EmotionPredictor('outputs/attention_fusion_model_best.pt', device='cpu')
+    predictor = EmotionPredictor('outputs/model_of_record.pt', device='cpu')
     
     # Make predictions
     num_predictions = 3
@@ -234,7 +234,7 @@ def example_6_save_load_results():
     print(f"\nMaking {num_predictions} predictions...\n")
     
     for i in range(num_predictions):
-        eeg = np.random.randn(28, 512).astype(np.float32)
+        eeg = np.random.randn(30, 2500).astype(np.float32)
         result = predictor.predict(eeg)
         result['sample_id'] = f"sample_{i:03d}"
         results.append(result)

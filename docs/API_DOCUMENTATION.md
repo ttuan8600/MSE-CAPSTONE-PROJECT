@@ -13,7 +13,7 @@ pip install flask flask-cors torch numpy scipy
 ### 2. Start the API Server
 
 ```bash
-python app.py --model outputs/attention_fusion_model_best.pt --port 5000
+python app.py --model outputs/model_of_record.pt --port 5000
 ```
 
 Expected output:
@@ -23,7 +23,7 @@ Expected output:
 Emotion Recognition REST API
 ============================================================
 Starting server on http://0.0.0.0:5000
-Model: outputs/attention_fusion_model_best.pt
+Model: outputs/model_of_record.pt
 Device: cpu
 
 API Documentation:
@@ -103,10 +103,10 @@ curl http://localhost:5000/emotions
 {
   "model": "Multimodal Emotion Recognition",
   "modalities": ["EEG", "Audio"],
-  "eeg_channels": 28,
+  "eeg_channels": 30,
   "audio_mfcc_channels": 13,
   "emotions": ["Neutral", "Anger", "Calmness", "Sadness", "Happiness"],
-  "accuracy": "78.57%",
+  "val_accuracy": 0.5283,
   "version": "1.0"
 }
 ```
@@ -171,7 +171,7 @@ Content-Type: application/json
     "Happiness": 0.87
   },
   "input_shapes": {
-    "eeg": [28, 512],
+    "eeg": [30, 2500],
     "audio": [13, 128]
   },
   "timestamp": "2024-04-04T10:30:45.123456"
@@ -182,7 +182,7 @@ Content-Type: application/json
 
 ```json
 {
-  "error": "EEG must have 28 channels, got 32",
+  "error": "EEG must have 30 channels, got 32",
   "error_type": "ValueError"
 }
 ```
@@ -270,7 +270,7 @@ import numpy as np
 API_URL = "http://localhost:5000"
 
 # Single prediction
-eeg_data = np.random.randn(28, 512).tolist()
+eeg_data = np.random.randn(30, 2500).tolist()
 audio_data = np.random.randn(13, 128).tolist()
 
 response = requests.post(
@@ -291,7 +291,7 @@ import json
 import numpy as np
 
 data = {
-    "eeg": np.random.randn(28, 512).tolist()
+    "eeg": np.random.randn(30, 2500).tolist()
 }
 
 json_data = json.dumps(data).encode('utf-8')
@@ -331,7 +331,7 @@ curl http://localhost:5000/emotions
 
 ```javascript
 // Single prediction
-const eegData = Array(28)
+const eegData = Array(30)
   .fill(0)
   .map(() => Array(512).fill(Math.random()));
 
@@ -354,7 +354,7 @@ console.log(`Confidence: ${(result.confidence * 100).toFixed(1)}%`);
 
 ### EEG Data
 
-- **Shape:** (28, time_steps)
+- **Shape:** (30, time_steps) at 125 Hz
 - **Channels:** 28 electrode channels
 - **Time Steps:** Variable (typically 512-2048)
 - **Data Type:** Float32
@@ -363,7 +363,7 @@ console.log(`Confidence: ${(result.confidence * 100).toFixed(1)}%`);
 Example:
 
 ```python
-eeg_data = np.random.randn(28, 512).astype(np.float32)
+eeg_data = np.random.randn(30, 2500).astype(np.float32)
 ```
 
 ### Audio Data
@@ -543,7 +543,7 @@ print(f"Emotions: {resp.json()['emotions']}\n")
 # Test 3: Single prediction
 print("Testing single prediction...")
 import numpy as np
-eeg = np.random.randn(28, 512).tolist()
+eeg = np.random.randn(30, 2500).tolist()
 resp = requests.post(
     'http://localhost:5000/predict',
     json={"eeg": eeg}
@@ -555,8 +555,8 @@ print(f"Emotion: {result['emotion']} ({result['confidence']:.1%})\n")
 # Test 4: Batch prediction
 print("Testing batch prediction...")
 samples = [
-    {"eeg": np.random.randn(28, 512).tolist(), "id": "s1"},
-    {"eeg": np.random.randn(28, 512).tolist(), "id": "s2"}
+    {"eeg": np.random.randn(30, 2500).tolist(), "id": "s1"},
+    {"eeg": np.random.randn(30, 2500).tolist(), "id": "s2"}
 ]
 resp = requests.post(
     'http://localhost:5000/batch-predict',
@@ -574,14 +574,14 @@ print(f"Processed: {result['num_successful']}/{result['num_processed']}")
 ### API won't start
 
 - Check if port is already in use: `lsof -i :5000`
-- Verify model file exists: `ls outputs/attention_fusion_model_best.pt`
+- Verify model file exists: `ls outputs/model_of_record.pt`
 - Check Python environment: `python --version`
 
 ### Model loading errors
 
 - Ensure PyTorch is installed: `pip install torch`
 - Check CUDA compatibility if using GPU: `python -m torch.utils.collect_env`
-- Verify model checkpoint is valid: `python -c "import torch; torch.load('outputs/attention_fusion_model_best.pt')"`
+- Verify model checkpoint is valid: `python -c "import torch; torch.load('outputs/model_of_record.pt')"`
 
 ### Slow predictions
 
@@ -591,7 +591,7 @@ print(f"Processed: {result['num_successful']}/{result['num_processed']}")
 
 ### Invalid predictions
 
-- Verify input shapes: 28 channels for EEG, 13 for audio
+- Verify input shapes: 30 channels for EEG, 13 for audio
 - Check data normalization
 - Ensure data is in float32 format
 

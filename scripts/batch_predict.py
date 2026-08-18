@@ -79,7 +79,7 @@ class BatchProcessor:
         num_samples = eeg_data_selected.shape[0]
         
         if num_samples < 28:
-            # Samples are rows, need (num_samples, 28, time_steps)
+            # Samples are rows, need (num_samples, 30, time_steps)
             eeg_data_selected = eeg_data_selected.T
         
         # Process
@@ -88,9 +88,9 @@ class BatchProcessor:
             sample = eeg_data_selected[i]
             
             if sample.ndim == 1:
-                # Reshape to (28, -1) if needed
+                # Reshape to (30, -1) if needed
                 if sample.shape[0] == 28:
-                    sample = sample.reshape(28, 1)
+                    sample = sample.reshape(30, 1)
             
             result = self.predictor.predict(sample)
             result['sample_id'] = i
@@ -308,7 +308,7 @@ class BatchProcessor:
 
 def main():
     parser = argparse.ArgumentParser(description='Batch process emotion predictions')
-    parser.add_argument('--model', default='outputs/attention_fusion_model_best.pt',
+    parser.add_argument('--model', default='outputs/model_of_record.pt',
                        help='Path to model')
     parser.add_argument('--input', required=True,
                        help='Input file or directory')

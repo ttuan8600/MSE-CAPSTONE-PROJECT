@@ -70,8 +70,8 @@ def verify_model():
     # 3. Test inference with dummy data
     print("\nTesting inference with dummy data...")
     try:
-        dummy_eeg = torch.randn(1, 28, 512, device=device)
-        dummy_audio = torch.randn(1, 13, 44, device=device)
+        dummy_eeg = torch.randn(1, 30, 2500, device=device)
+        dummy_audio = torch.randn(1, 13, 2101, device=device)
         
         with torch.no_grad():
             eeg_feat = encoder(dummy_eeg)

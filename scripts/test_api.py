@@ -100,7 +100,7 @@ class APITester:
         
         try:
             # Create dummy EEG data
-            eeg = np.random.randn(28, 512).tolist()
+            eeg = np.random.randn(30, 2500).tolist()
             
             response = requests.post(
                 f"{self.base_url}/predict",
@@ -132,8 +132,8 @@ class APITester:
         
         try:
             # Create dummy data
-            eeg = np.random.randn(28, 512).tolist()
-            audio = np.random.randn(13, 128).tolist()
+            eeg = np.random.randn(30, 2500).tolist()
+            audio = np.random.randn(13, 2101).tolist()
             
             response = requests.post(
                 f"{self.base_url}/predict",
@@ -167,7 +167,7 @@ class APITester:
             samples = []
             for i in range(3):
                 samples.append({
-                    "eeg": np.random.randn(28, 512).tolist(),
+                    "eeg": np.random.randn(30, 2500).tolist(),
                     "id": f"sample_{i:03d}"
                 })
             

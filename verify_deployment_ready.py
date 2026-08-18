@@ -10,7 +10,7 @@ from pathlib import Path
 
 def verify_checkpoint():
     """Verify checkpoint file exists and loads correctly"""
-    checkpoint_path = Path('outputs/attention_fusion_model_best.pt')
+    checkpoint_path = Path('outputs/model_of_record.pt')
     
     print("=" * 60)
     print("🔍 ATTENTION FUSION MODEL VERIFICATION")
@@ -147,7 +147,7 @@ def verify_inference():
         from src.models.attention_fusion import CrossModalAttentionFusion
         
         # Create dummy data
-        eeg_data = torch.randn(1, 28, 512)
+        eeg_data = torch.randn(1, 30, 2500)
         audio_data = torch.randn(1, 13, 44)
         
         # Create model components
@@ -157,7 +157,7 @@ def verify_inference():
         classifier = EmotionClassifier().eval()
         
         # Load checkpoint if available
-        checkpoint_path = Path('outputs/attention_fusion_model_best.pt')
+        checkpoint_path = Path('outputs/model_of_record.pt')
         
         if checkpoint_path.exists():
             checkpoint = torch.load(checkpoint_path, map_location='cpu')
@@ -232,7 +232,7 @@ def main():
     if passed == total and total > 0:
         print(f"🎉 VERIFICATION COMPLETE: {passed}/{total} checks passed")
         print("\n✅ MODEL IS READY FOR DEPLOYMENT")
-        print("   Checkpoint: outputs/attention_fusion_model_best.pt")
+        print("   Checkpoint: outputs/model_of_record.pt")
         print("   Accuracy:   78.57% on test set")
         print("   Inference:  ~8ms per sample")
     else:

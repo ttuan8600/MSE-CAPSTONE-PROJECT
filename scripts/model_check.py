@@ -6,7 +6,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import torch
 from src.models.eeg_encoder import EEGEncoder, AudioEncoder, MultimodalFusion
 
-print('EEGEncoder output shape', EEGEncoder()(torch.randn(2,28,100)).shape)
+print('EEGEncoder output shape', EEGEncoder()(torch.randn(2,30,2500)).shape)
 print('AudioEncoder output shape', AudioEncoder()(torch.randn(2,13,200)).shape)
 fusion = MultimodalFusion()
 eeg_feat = torch.randn(2,128)
