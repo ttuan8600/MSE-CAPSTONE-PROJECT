@@ -2,14 +2,23 @@
 
 **Model**: Attention Fusion for Multimodal Emotion Recognition  
 **Version**: 2.0  
-**Held-out test accuracy**: 78.57% (see [CHANGELOG.md](CHANGELOG.md))  
+**Held-out test accuracy**: 55.50% (see [CHANGELOG.md](CHANGELOG.md))  
 **Status**: ✅ Deployable  
 **Updated**: August 8, 2026
 
-> The previously stated 82.06% is not supported by any result artifact, and the
-> fine-tuned checkpoint has no uncontaminated evaluation. Deploy
-> `attention_fusion_model_best.pt` and cite 78.57%. See
-> [CHANGELOG.md](CHANGELOG.md#known-measurement-issue-traintest-contamination).
+> **All figures before 2026-08-08 are withdrawn** (78.57%, 82.06%, 84.44%). They
+> came from a pipeline in which every sample from a subject shared one identical
+> EEG tensor, evaluated on a split containing all 42 subjects. Deploy
+> `model_of_record.pt` and cite **55.50%**, measured on eight held-out subjects.
+> See [DATA_CORRECTIONS.md](DATA_CORRECTIONS.md).
+>
+> **Input contract:** EEG `(30, 2500)` — 20 s at 125 Hz, band-passed 0.5–45 Hz —
+> and MFCC `(13, 2101)` at 16 kHz. Both are required; a missing modality returns
+> HTTP 400 rather than a zero-filled prediction.
+>
+> **Accuracy caveat:** at 55.50% on five classes this is a research artifact. It
+> is correctly packaged and reproducible, but it is not accurate enough for any
+> application where a misclassification carries cost.
 
 ---
 
@@ -39,8 +48,8 @@ import torch
 from src.models.eeg_encoder import EEGEncoder, AudioEncoder, EmotionClassifier
 from src.models.attention_fusion import CrossModalAttentionFusion
 
-# Load production model (78.57% held-out test accuracy)
-checkpoint = torch.load('outputs/attention_fusion_model_best.pt')
+# Load production model (55.50% held-out test accuracy (subject-independent))
+checkpoint = torch.load('outputs/model_of_record.pt')
 encoder, audio_encoder = EEGEncoder(), AudioEncoder()
 attention_fusion = CrossModalAttentionFusion()
 classifier = EmotionClassifier()
@@ -51,7 +60,7 @@ for model, key in [(encoder, 'encoder'), (audio_encoder, 'audio_encoder'),
     model.load_state_dict(checkpoint[key])
     model.eval()
 
-print('✅ Model loaded: 78.57% held-out test accuracy')
+print('✅ Model loaded: 55.50% held-out test accuracy (subject-independent)')
 "
 ```
 
@@ -97,7 +106,7 @@ python -c "import torch; print(f'PyTorch {torch.__version__}')"
 
 ```bash
 # Check that production model exists
-ls -la outputs/attention_fusion_model_best.pt
+ls -la outputs/model_of_record.pt
 
 # Expected output: ~3.54 MB file
 ```
@@ -109,7 +118,7 @@ ls -la outputs/attention_fusion_model_best.pt
 > **Note:** the example below loads `focal_loss_model_best.pt` with
 > `MultimodalFusion(mode='gated')` — that is the **older focal-loss model (63.02%)**,
 > not the model of record. To deploy the attention fusion model, use the Quick Start
-> snippet above, which loads `attention_fusion_model_best.pt` with
+> snippet above, which loads `model_of_record.pt` with
 > `CrossModalAttentionFusion`.
 
 ### Basic Inference (Recommended)
@@ -147,7 +156,7 @@ ls -la outputs/attention_fusion_model_best.pt
         Predict emotion from EEG and audio features.
 
         Args:
-            eeg_data: np.ndarray shape (batch_size, 28, time_steps)
+            eeg_data: np.ndarray shape (batch_size, 30, time_steps)
             audio_mfcc: np.ndarray shape (batch_size, 13, time_frames)
 
         Returns:
@@ -203,11 +212,11 @@ predictor = EmotionPredictor('outputs/focal_loss_model_best.pt')
     )
 
     sample = dataset[0]
-    eeg = sample['eeg'].numpy()  # shape (28, 512)
+    eeg = sample['eeg'].numpy()  # shape (30, 2500)
     audio = sample['audio'].numpy()  # shape (13, 44)
 
     # Add batch dimension
-    eeg = np.expand_dims(eeg, 0)  # (1, 28, 512)
+    eeg = np.expand_dims(eeg, 0)  # (1, 30, 2500)
     audio = np.expand_dims(audio, 0)  # (1, 13, 44)
 
     result = predictor.predict(eeg, audio)
@@ -223,7 +232,7 @@ predictor = EmotionPredictor('outputs/focal_loss_model_best.pt')
 
 ### Input Specifications
 
-- **EEG Input:** 28 channels × 512 time steps (normalized)
+- **EEG Input:** 30 channels x 2500 time steps (20 s @ 125 Hz) (normalized)
 - **Audio Input:** 13 MFCC coefficients × 44 frames
 - **Preprocessing:** EEG normalized via z-score, audio pre-extracted
 
@@ -257,7 +266,7 @@ predictor = EmotionPredictor('outputs/focal_loss_model_best.pt')
 
 ### Accuracy by Emotion
 
-Model of record — attention fusion, `attention_fusion_model_best.pt`, 78.57% overall
+Model of record — attention fusion, `model_of_record.pt`, 55.50% overall (subject-independent)
 (`outputs/attention_fusion_20260401_182606/results.json`):
 
 | Emotion   | Accuracy | Reliability          |
@@ -307,7 +316,7 @@ def predict():
     audio_path = data['audio_file']
 
     # Extract EEG and audio features (from database or file)
-    eeg_data = np.random.randn(1, 28, 512)  # Replace with actual data
+    eeg_data = np.random.randn(1, 30, 2500)  # Replace with actual data
 
     # Extract MFCC
     y, sr = librosa.load(audio_path, sr=None)
@@ -335,7 +344,7 @@ for eeg_file in glob.glob('data/eeg/*.mat'):
     sample_id = eeg_file.split('/')[-1]
 
     # Load EEG (your format)
-    eeg_data = load_eeg_mat(eeg_file)  # Returns (28, 512)
+    eeg_data = load_eeg_mat(eeg_file)  # Returns (30, 2500)
     audio_file = eeg_file.replace('.mat', '.wav')
     audio_mfcc = extract_mfcc(audio_file)  # Returns (13, 44)
 
@@ -401,7 +410,7 @@ device = torch.device('cpu')
 # ... load model components ...
 
 # Dummy input
-dummy_eeg = torch.randn(1, 28, 512, device=device)
+dummy_eeg = torch.randn(1, 30, 2500, device=device)
 dummy_audio = torch.randn(1, 13, 44, device=device)
 
 # Export encoder
